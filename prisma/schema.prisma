@@ -1,0 +1,181 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql" 
+}
+
+enum Role {
+  CLIENT
+  PROVIDER
+  ADMIN
+}
+
+enum RequestStatus {
+  OPEN
+  FILLED
+  CANCELLED
+  HIDDEN
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum BookingStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  REQUIRES_ACTION
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  name      String?
+  role      Role     @default(CLIENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile      Profile?
+  requests     ServiceRequest[] @relation("ClientRequests")
+  offers       Offer[]          @relation("ProviderOffers")
+  adminActions AdminAction[]
+
+  @@index([clerkId])
+  @@index([role])
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  bio       String?
+  city      String?
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  requests RequestCategory[]
+
+  @@index([slug])
+}
+
+model ServiceRequest {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  neededAt    DateTime
+  location    String?
+  status      RequestStatus @default(OPEN)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  clientId String
+  client   User @relation("ClientRequests", fields: [clientId], references: [id])
+
+  categories RequestCategory[]
+  offers     Offer[]
+  booking    Booking?
+
+  @@index([clientId])
+  @@index([status, neededAt])
+}
+
+model RequestCategory {
+  requestId  String
+  categoryId String
+
+  request  ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  category Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([requestId, categoryId])
+  @@index([categoryId])
+}
+
+model Offer {
+  id        String      @id @default(cuid())
+  price     Int         // en cents pour éviter Float (ex: 25000 = 250.00$)
+  message   String
+  status    OfferStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  requestId String
+  request   ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  providerId String
+  provider   User @relation("ProviderOffers", fields: [providerId], references: [id])
+
+  booking Booking?
+
+  @@unique([requestId, providerId])
+  @@index([requestId, status])
+  @@index([providerId, status])
+}
+
+model Booking {
+  id        String        @id @default(cuid())
+  status    BookingStatus @default(PENDING_PAYMENT)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  requestId String @unique
+  request   ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  offerId String @unique
+  offer   Offer @relation(fields: [offerId], references: [id], onDelete: Restrict)
+
+  amountSubtotal Int // prix de l'offre
+  platformFee    Int // commission
+  amountTotal    Int // subtotal + fee
+
+  payment Payment?
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  status    PaymentStatus @default(REQUIRES_ACTION)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  bookingId String @unique
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  stripePaymentIntentId String? @unique
+}
+
+model AdminAction {
+  id        String   @id @default(cuid())
+  adminId   String
+  admin     User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  action    String
+  createdAt DateTime @default(now())
+
+  @@index([adminId])
+}
