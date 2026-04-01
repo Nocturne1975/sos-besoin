@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HTTPS://github.com/Nocturne1975/sos-besoin.git
 
-## Getting Started
+# SOS‑BESOIN — Laboratoire 1 (420‑951‑MA) 
 
-First, run the development server:
+Plateforme Web transactionnelle permettant à des **clients** de publier des demandes urgentes (ex: besoin d’un guitariste remplaçant, d’un service tech, d’une correction de texte) et à des **prestataires** de soumettre des offres. Le client peut **accepter une offre** et **confirmer la réservation** via un flux de paiement (Stripe en mode test) avec intégrité transactionnelle (ACID) via Prisma.
 
+## Stack
+- **Next.js** (App Router)
+- **TypeScript**
+- **PostgreSQL** (Neon)
+- **Prisma ORM**
+- **Clerk** (auth) *(prévu/intégration progressive)*
+- **Stripe** (paiement) *(prévu/intégration progressive)*
+
+> Remarque: ce dépôt couvre les fondations demandées au **Lab 1**: schéma Prisma, migrations, seed, transactions Prisma, script de test transactionnel, et documentation.
+
+---
+
+## Prérequis
+- Node.js LTS (recommandé)
+- Une base PostgreSQL (ex: Neon)
+- npm
+
+---
+
+## Configuration des variables d’environnement
+
+1. Copier le fichier d’exemple :
+   ```bash
+   cp .env.example .env
+   ```
+   *(Sur Windows si `cp` ne fonctionne pas, copiez manuellement le fichier.)*
+
+2. Remplir `DATABASE_URL` dans `.env` avec votre chaîne de connexion PostgreSQL.
+
+⚠️ **Ne jamais commit `.env`** (il contient des secrets).
+
+---
+
+## Installation
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Prisma — Migrations
+Appliquer les migrations en développement :
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx prisma migrate dev
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Prisma — Seed (peupler la base de données)
+Le seed est idempotent (il supprime les données puis réinsère des données réalistes).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npx prisma db seed
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Prisma Studio
+Pour visualiser les données :
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npx prisma studio
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Transactions ACID (Prisma)
+Les transactions sont implémentées dans :
+
+- `src/lib/transactions.ts`
+  - transaction **séquentielle**
+  - transaction **interactive** (avec logique + rollback)
+
+---
+
+## Script de test transactionnel
+Le script démontre :
+- un scénario **succès** (transaction validée)
+- un scénario **échec** (rollback complet) + vérifications
+
+Exécution :
+
+```bash
+npm run test:tx
+```
+
+---
+
+## Structure du projet (éléments clés)
+- `prisma/schema.prisma` — Schéma Prisma
+- `prisma/migrations/` — Historique des migrations
+- `prisma/seed.ts` — Script de seed
+- `src/lib/prisma.ts` — Singleton Prisma Client
+- `src/lib/transactions.ts` — Transactions Prisma
+- `src/lib/test-transactions.ts` — Tests transactionnels
+- `.env.example` — Exemple de variables d’environnement
+- `.gitignore` — Fichiers exclus (dont `.env`)
+
+---
+
+## Auteurs / Équipe
+- À compléter (noms des membres + rôles/contributions)
+
+---
+
+## Licence
+Projet académique — usage pédagogique.
