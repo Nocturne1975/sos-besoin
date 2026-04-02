@@ -107,7 +107,10 @@ npm run test:tx
 ---
 
 ## Auteurs / Équipe
-- À compléter (noms des membres + rôles/contributions)
+- Asma Ajroudi
+- Sonia Corbin
+- Marina Kamel
+- Sonia Mhimdi
 
 ---
 
