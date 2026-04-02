@@ -1,4 +1,5 @@
 # HTTPS://github.com/Nocturne1975/sos-besoin.git
+# Equipe: Sonia Corbin - Asma Ajroudi - Marina Kamel - Sonia Mhimdi
 
 # SOS‑BESOIN — Laboratoire 1 (420‑951‑MA) 
 
