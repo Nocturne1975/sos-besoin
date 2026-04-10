@@ -131,6 +131,6 @@ export async function acceptOfferAndCreateBooking(params: {
 
     return { success: true as const, booking };
   } catch (error) {
-    return { success: false as const, error: (error as Error).message };
+    return { success: false as const, error: (error as Error).message }; // Asma Ajroudi  
   }
 }

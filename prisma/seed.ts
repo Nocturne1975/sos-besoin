@@ -1,6 +1,7 @@
-import { PrismaClient, Role } from "@prisma/client";
+import "dotenv/config";
 
-const prisma = new PrismaClient();
+import { Role } from "../src/generated/prisma/client";
+import prisma from "../src/lib/prisma";
 
 // Commission plateforme (10%)
 const PLATFORM_FEE_BPS = 1000; // basis points: 1000 = 10%

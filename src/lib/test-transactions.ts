@@ -120,4 +120,4 @@ async function testTransactions() {
 
 testTransactions()
   .catch(console.error)
-  .finally(() => prisma.$disconnect());
+  .finally(() => prisma.$disconnect()); // Sonia Corbin
